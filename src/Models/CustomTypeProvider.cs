@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 
 namespace CeramicsPortfolio.Blazor.Models
@@ -6,7 +9,10 @@ namespace CeramicsPortfolio.Blazor.Models
     {
         private static readonly Dictionary<Type, string> _codenames = new Dictionary<Type, string>
         {
-            {typeof(Test1), "test1"}
+            {typeof(FontAwesomeLink), "font_awesome_link"},
+            {typeof(Home), "home"},
+            {typeof(NavigationItem), "navigation_item"},
+            {typeof(PortfolioItem), "portfolio_item"}
         };
 
         public Type GetType(string contentType)
