@@ -27,16 +27,16 @@ namespace CeramicsPortfolio.Blazor.Shared
                 var msg = new SendGridMessage()
                 {
                     From = new EmailAddress(ContactForm.Email),
-                    Subject = $"Message from {ContactForm.Name}"
+                    Subject = $"Wiadomość od {ContactForm.Name}"
                 };
-                msg.AddContent(MimeType.Html, $"{ContactForm.Message}{$"<br />Phone: {ContactForm.Phone}"}");
+                msg.AddContent(MimeType.Html, $"{ContactForm.Message}{$"<br />Numer telefonu: {ContactForm.Phone}"}");
                 msg.AddTo(new EmailAddress("receiver@me.com"));
 
                 // Send the message
                 var response = await Client.SendEmailAsync(msg);
 
                 // Display status
-                ContactForm.Success = "Message sent!";
+                ContactForm.Success = "Wiadomość wysłana!";
             }
             catch (Exception ex)
             {
