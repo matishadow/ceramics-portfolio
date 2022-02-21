@@ -9,7 +9,7 @@
 		<BlazorEnableCompression>false</BlazorEnableCompression>
 		<UserSecretsId>d752cec5-2a32-413b-a52b-bcc51aa31258</UserSecretsId>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RunAOTCompilation>true</RunAOTCompilation>
+		<RunAOTCompilation>false</RunAOTCompilation>
 	</PropertyGroup>
 
 	<ItemGroup>
