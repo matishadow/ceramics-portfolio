@@ -33,4 +33,14 @@
     <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\scss\layout\_contact.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\layout\_footer.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\layout\_masthead.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\layout\_navbar.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\layout\_portfolio.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\base\_page.scss" />
+    <_ContentIncludedByDefault Remove="wwwroot\scss\base\_variables.scss" />
+  </ItemGroup>
+
 </Project>
