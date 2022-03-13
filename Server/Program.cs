@@ -23,8 +23,6 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseHsts();
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
