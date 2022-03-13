@@ -7,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.HttpsPort = 443;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
