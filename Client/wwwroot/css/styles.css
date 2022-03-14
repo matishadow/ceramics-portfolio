@@ -11538,3 +11538,7 @@ header.masthead h1, header.masthead .h1 {
 .img-photo {
   max-height: 450px;
 }
+
+.page-section-about {
+  height: 100vh;
+}
