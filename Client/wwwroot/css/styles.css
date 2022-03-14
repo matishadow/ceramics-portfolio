@@ -11299,7 +11299,7 @@ body {
 }
 
 .page-section {
-  padding: 8rem 0;
+  padding: 3.5rem 0;
 }
 
 .text-white-75 {
@@ -11533,4 +11533,8 @@ header.masthead h1, header.masthead .h1 {
 
 .btn-about {
   margin-top: 110px;
+}
+
+.img-photo {
+  max-height: 450px;
 }
