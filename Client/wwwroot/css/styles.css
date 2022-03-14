@@ -11540,5 +11540,5 @@ header.masthead h1, header.masthead .h1 {
 }
 
 .page-section-about {
-  height: 100vh;
+  min-height: 100vh;
 }
