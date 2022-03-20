@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Mail;
+using CeramicsPortfolio.Blazor.Models;
 
 
 namespace ceramics_portfolio.Server.Controllers;
@@ -9,9 +10,9 @@ public class FormSubmissionController : Controller
 {
     [HttpPost]
     [Route("api/formSubmission")]
-    public async Task<IActionResult> SendForm(string name, string email, string phone, string message)
+    public async Task<IActionResult> SendForm([FromBody]ContactForm contactForm)
     {
-        await SendEmail(name, email, phone, message);
+        await SendEmail(contactForm.Name, contactForm.Email, contactForm.Phone, contactForm.Message);
 
         return Ok();
     }
@@ -44,6 +45,7 @@ public class FormSubmissionController : Controller
             Subject = subject,
             Body = body
         };
+
         await smtp.SendMailAsync(mailMessage);
     }
 }
