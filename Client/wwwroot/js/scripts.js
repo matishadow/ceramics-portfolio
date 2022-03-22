@@ -57,14 +57,12 @@ window.addEventListener('DOMContentLoaded', event => {
         });
     }
 
-    window.setCaptcha = function ExecuteReCaptcha_OnSome_ButtonAction(dotNetObj){
-        grecaptcha.ready(function() {
-            grecaptcha.execute('6Le6JgEfAAAAAOdUZKu4C0q_2R-7mZ2ovEqOrJuC', {action: 'formSubmission'})
-                .then(function(token) {
+    window.getCaptcha = async function () {
+        await grecaptcha.ready(function() {});
 
-                    dotNetObj.invokeMethodAsync('CallbackOnSuccess', token);
-                });
-        });
+        const token = await grecaptcha.execute('6Le6JgEfAAAAAOdUZKu4C0q_2R-7mZ2ovEqOrJuC', {action: 'formSubmission'})
+
+        return token;
     }
 
     window.initNavMenu = function () {

@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Mail;
+using AngleSharp.Common;
+using BitArmory.ReCaptcha;
 using CeramicsPortfolio.Blazor.Models;
+using Microsoft.Extensions.Primitives;
 
 
 namespace ceramics_portfolio.Server.Controllers;
@@ -12,9 +15,31 @@ public class FormSubmissionController : Controller
     [Route("api/formSubmission")]
     public async Task<IActionResult> SendForm([FromBody]ContactForm contactForm)
     {
+        string clientIp = GetClientIpAddress();
+        string token = contactForm.Captcha;
+        string secret = Environment.GetEnvironmentVariable("RECAPTCHA_SECRET");
+
+        var captchaApi = new ReCaptchaService();
+        var result = await captchaApi.Verify3Async(token, clientIp, secret);
+
+        if( !result.IsSuccess || result.Action != "formSubmission" || result.Score < 0.5 )
+        {
+            return new BadRequestObjectResult(result);
+        }
+
         await SendEmail(contactForm.Name, contactForm.Email, contactForm.Phone, contactForm.Message);
 
         return Ok();
+    }
+
+    public string GetClientIpAddress()
+    {
+        var proxyIp = HttpContext.Request.Headers.GetOrDefault("x-forwarded-for", "");
+
+        if (!string.IsNullOrWhiteSpace(proxyIp))
+            return proxyIp;
+
+        return HttpContext.Connection.RemoteIpAddress.ToString();
     }
 
     private async Task SendEmail(string name, string email, string phone, string message)

@@ -104,9 +104,6 @@
     private bool _isFormSubmittedFail = false;
     private bool _isFormSubmitted = false;
 
-    [Inject]
-    private IJSRuntime JsRuntime { get; set; }
-
     protected override void OnInitialized()
     {
         _editContext = new EditContext(_contactForm);
@@ -126,9 +123,14 @@
         _contactForm.Captcha = response;
     }
 
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; }
+
     private async Task HandleValidSubmit()
     {
-        await JsRuntime.InvokeAsync<object>("setCaptcha", DotNetObjectReference.Create(this));
+        var token = await JsRuntime.InvokeAsync<string>("getCaptcha");
+
+        _contactForm.Captcha = token;
 
         var json = JsonConvert.SerializeObject(_contactForm);
         var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
