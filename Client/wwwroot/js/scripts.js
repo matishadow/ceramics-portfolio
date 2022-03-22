@@ -57,6 +57,16 @@ window.addEventListener('DOMContentLoaded', event => {
         });
     }
 
+    window.setCaptcha = function ExecuteReCaptcha_OnSome_ButtonAction(dotNetObj){
+        grecaptcha.ready(function() {
+            grecaptcha.execute('6Le6JgEfAAAAAOdUZKu4C0q_2R-7mZ2ovEqOrJuC', {action: 'formSubmission'})
+                .then(function(token) {
+
+                    dotNetObj.invokeMethodAsync('CallbackOnSuccess', token);
+                });
+        });
+    }
+
     window.initNavMenu = function () {
         // Smooth scrolling using jQuery easing
         $('a.js-scroll-trigger[href*="#"]:not([href="#"])').click(function () {

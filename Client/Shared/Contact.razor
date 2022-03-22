@@ -5,6 +5,7 @@
 @using Newtonsoft.Json
 @using System.Text
 @using System.Net.Mime
+@using System.ComponentModel
 <!-- Contact-->
 <section class="page-section" id="contact">
     <div class="container px-4 px-lg-5">
@@ -83,6 +84,9 @@
                         </div>
                     }
 
+                    <InputText id="captcha"
+                               type="hidden"
+                               name="captcha" @bind-Value="_contactForm.Captcha" />
                 </EditForm>
             </div>
         </div>
@@ -100,21 +104,32 @@
     private bool _isFormSubmittedFail = false;
     private bool _isFormSubmitted = false;
 
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; }
+
     protected override void OnInitialized()
     {
         _editContext = new EditContext(_contactForm);
         _editContext.OnFieldChanged += HandleFieldChanged;
     }
 
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    private async void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
         if (_editContext is null) return;
 
         _formInvalid = !_editContext.Validate();
     }
 
+    [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    public void CallbackOnSuccess(string response)
+    {
+        _contactForm.Captcha = response;
+    }
+
     private async Task HandleValidSubmit()
     {
+        await JsRuntime.InvokeAsync<object>("setCaptcha", DotNetObjectReference.Create(this));
+
         var json = JsonConvert.SerializeObject(_contactForm);
         var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 

@@ -16,4 +16,6 @@ public class ContactForm
 
     [Required(ErrorMessage = "Musisz napisać jakąś wiadomość...")]
     public string Message { get; set; }
+
+    public string Captcha { get; set; }
 }
