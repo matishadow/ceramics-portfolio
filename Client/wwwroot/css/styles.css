@@ -11458,7 +11458,7 @@ header.masthead h1, header.masthead .h1 {
 }
 
 .loader-mask {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
