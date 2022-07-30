@@ -1,0 +1,55 @@
+@using Contentful.Core
+@using Contentful.Core.Search
+@using CeramicsPortfolioFinal.Models
+@inject IContentfulClient _contentfulClient
+@inject IJSRuntime _jsRuntime
+
+<!-- Portfolio-->
+<div id="portfolio">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+
+            @if (_portfolio == null)
+            {
+                <p>
+                    <em>Loading ...</em>
+                </p>
+            }
+            else
+            {
+                @foreach (PortfolioItem item in _portfolio.PortfolioItems)
+                {
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="@item.FullSizeImage.File.Url" title="@item.Title">
+                            <img class="img-fluid" loading="lazy" src="@item.ThumbnailImage.File.Url" alt="..."/>
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">@item.Category</div>
+                                <div class="project-name">@item.Title</div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private Models.Portfolio? _portfolio;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _jsRuntime.InvokeAsync<object>("initPortfolio");
+        await _jsRuntime.InvokeAsync<object>("initNavMenu");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        QueryBuilder<Models.Portfolio> queryBuilder =
+            new QueryBuilder<Models.Portfolio>().ContentTypeIs("portfolio").Include(10);
+        var result = await _contentfulClient.GetEntries(queryBuilder);
+        _portfolio = result.FirstOrDefault();
+    }
+}

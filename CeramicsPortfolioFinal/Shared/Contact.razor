@@ -1,0 +1,209 @@
+@inject NavigationManager _navigator
+@inject IJSRuntime _jsRuntime
+@inject IHttpContextAccessor _httpContextAccessor
+
+@using Newtonsoft.Json
+@using System.Text
+@using System.Net.Mime
+@using System.ComponentModel
+@using System.Net
+@using System.Net.Mail
+@using BitArmory.ReCaptcha
+@using CeramicsPortfolioFinal.Models
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Primitives
+<!-- Contact-->
+<section class="page-section" id="contact">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6 text-center">
+                <h2 class="mt-0">Napisz do mnie!</h2>
+                <hr class="divider"/>
+                <p class="text-muted mb-5">
+                    Podoba Ci się jakaś praca? Chcesz złożyć zamówienie na nową? A może tylko
+                    napisać mi, że jestem super? Śmiało!
+                </p>
+            </div>
+        </div>
+        <div class="row gx-4 gx-lg-5 justify-content-center mb-5">
+            <div class="col-lg-6">
+                <EditForm EditContext="@_editContext" OnValidSubmit="@HandleValidSubmit" >
+                    <DataAnnotationsValidator/>
+
+                    <div class="form-floating mb-3">
+                        <InputText disabled="@_isFormSubmitted" id="name" @bind-Value="_contactForm.Name" class="form-control" placeholder="Imię"/>
+
+                        <label for="name">Imię</label>
+                        <ValidationMessage For="@(() => _contactForm.Name)"/>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText disabled="@_isFormSubmitted" id="email" @bind-Value="_contactForm.Email" class="form-control" placeholder="Adres email"/>
+
+                        <label for="name">Adres email</label>
+                        <ValidationMessage For="@(() => _contactForm.Email)"/>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText disabled="@_isFormSubmitted" id="phone" @bind-Value="_contactForm.Phone" class="form-control" placeholder="Numer telefonu"/>
+
+                        <label for="name">Numer telefonu</label>
+                        <ValidationMessage For="@(() => _contactForm.Phone)"/>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputTextArea disabled="@_isFormSubmitted" id="message" style="height: 10rem; white-space: pre-line" @bind-Value="_contactForm.Message" class="form-control" placeholder="Wiadomość"/>
+
+                        <label for="name">Wiadomość</label>
+                        <ValidationMessage For="@(() => _contactForm.Message)"/>
+                    </div>
+
+                    <!-- Submit success message-->
+                    <!---->
+                    <!-- This is what your users will see when the form-->
+                    <!-- has successfully submitted-->
+                    @if (_isFormSubmittedSuccess)
+                    {
+                        <div id="submitSuccessMessage" >
+                            <div class="text-center mb-3">
+                                <div class="fw-bolder">Udało się wysłać wiadomość!</div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Submit error message-->
+                    <!---->
+                    <!-- This is what your users will see when there is-->
+                    <!-- an error submitting the form-->
+                    @if (_isFormSubmittedFail)
+                    {
+                        <div id="submitErrorMessage" >
+                            <div class="text-center text-danger mb-3">Nie udało się wysłać wiadomości</div>
+                        </div>
+                    }
+
+                    <!-- Submit Button-->
+                    @if (!_isFormSubmitted)
+                    {
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-xl" disabled="@_formInvalid" id="submitButton" type="submit">Wyślij</button>
+                        </div>
+                    }
+
+                    <InputText id="captcha"
+                               type="hidden"
+                               name="captcha" @bind-Value="_contactForm.Captcha" />
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>>
+
+@code
+{
+    private ContactForm _contactForm = new();
+
+    private bool _formInvalid = true;
+    private EditContext? _editContext;
+
+    private bool _isFormSubmittedSuccess = false;
+    private bool _isFormSubmittedFail = false;
+    private bool _isFormSubmitted = false;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_contactForm);
+        _editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (_editContext is null) return;
+
+        _formInvalid = !_editContext.Validate();
+    }
+
+    [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    public void CallbackOnSuccess(string response)
+    {
+        _contactForm.Captcha = response;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var token = await _jsRuntime.InvokeAsync<string>("getCaptcha");
+
+        _contactForm.Captcha = token;
+
+        try
+        {
+            await SendForm(_contactForm); 
+
+            _isFormSubmittedSuccess = true;
+            _isFormSubmittedFail = false;
+        }
+        catch (Exception e)
+        {
+            _isFormSubmittedFail = true;
+            _isFormSubmittedSuccess = false;
+        }
+        _isFormSubmitted = true;
+    }
+    
+    private async Task SendForm(ContactForm contactForm)
+    {
+        string? clientIp = GetClientIpAddress();
+        string token = contactForm.Captcha;
+        string secret = Environment.GetEnvironmentVariable("RECAPTCHA_SECRET");
+
+        var captchaApi = new ReCaptchaService();
+        var result = await captchaApi.Verify3Async(token, clientIp, secret);
+
+        if(!result.IsSuccess || result.Action != "formSubmission" || result.Score < 0.5)
+            return;
+
+        await SendEmail(contactForm.Name, contactForm.Email, contactForm.Phone, contactForm.Message);
+    }
+
+    private string? GetClientIpAddress()
+    {
+        var proxyIp = _httpContextAccessor.HttpContext?.Request.Headers["x-forwarded-for"];
+
+        if (!string.IsNullOrWhiteSpace(proxyIp))
+            return proxyIp;
+
+        return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+    }
+
+    private async Task SendEmail(string name, string email, string phone, string message)
+    {
+        string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+        string emailAddressTo = Environment.GetEnvironmentVariable("EMAIL_ADDRESS_TO");
+        var fromAddress = new MailAddress("sisterhoodceramics@gmail.com", "Strona sisterhood-ceramic");
+        var toAddress = new MailAddress(emailAddressTo, "Olka");
+
+        const string subject = "Wiadomość z formularza kontaktowego";
+        string body = $"Wiadomość od: {name}\n\n" +
+                      $"{message}\n\n\n" +
+                      $"Adres email: {email}\n";
+        if (!string.IsNullOrWhiteSpace(phone))
+            body += $"Numer telefonu: {phone}";
+
+        var smtp = new SmtpClient
+        {
+            Host = "smtp.gmail.com",
+            Port = 587,
+            EnableSsl = true,
+            DeliveryMethod = SmtpDeliveryMethod.Network,
+            UseDefaultCredentials = false,
+            Credentials = new NetworkCredential(fromAddress.Address, emailPassword)
+        };
+        using var mailMessage = new MailMessage(fromAddress, toAddress)
+        {
+            Subject = subject,
+            Body = body
+        };
+
+        await smtp.SendMailAsync(mailMessage);
+    }
+}

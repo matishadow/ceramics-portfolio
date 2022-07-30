@@ -1,7 +1,9 @@
+using Contentful.AspNetCore;
+using Contentful.Core.Configuration;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using CeramicsPortfolioFinal.Data;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+builder.Services.AddContentful(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddHttpsRedirection(options => { options.HttpsPort = 443; });
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
